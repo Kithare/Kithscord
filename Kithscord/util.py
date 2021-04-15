@@ -34,7 +34,7 @@ async def construct_embed(
 async def edit_embed(
         message, title, description, color=0xAAFFFF,
         url_image=None, url_thumbnail=None, fields=[]
-    ):
+):
     """
     Edits the embed of a message with a much more tight function
     """
@@ -47,7 +47,7 @@ async def edit_embed(
 async def send_embed(
         channel, title, description, color=0xAAFFFF,
         url_image=None, url_thumbnail=None, fields=[]
-    ):
+):
     """
     Sends an embed with a much more tight function
     """
@@ -65,3 +65,16 @@ def code_block(string: str, max_characters=2048):
         return f"```\n{string[:max_characters - 7]} ...```"
     else:
         return f"```\n{string[:max_characters]}```"
+
+
+def discordify(message):
+    """Converts normal string into "discord" string that includes backspaces to cancel out unwanted changes"""
+    if '\\' in message:
+        message = message.replace('\\', r'\\')
+    if '*' in message:
+        message = message.replace('*', r'\*')
+    if '`' in message:
+        message = message.replace('`', r'\`')
+    if '_' in message:
+        message = message.replace('_', r'\_')
+    return message

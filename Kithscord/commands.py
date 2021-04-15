@@ -1,5 +1,7 @@
 import discord
 
+import traceback
+
 import common
 import user_commands
 import admin_commands
@@ -54,9 +56,12 @@ async def handle(cmd_str: str, invoker_msg: discord.Message, response_msg: disco
             )
 
     except Exception as exc:
+        # path = "" TODO: Find heroku path thing lol
+        error_tuple = (type(exc), exc, exc.__traceback__)
+        formatted_exception = ''.join(traceback.format_exception(*error_tuple)).strip()  # .replace(path, '...')
         await util.edit_embed(
             response_msg,
-            "An exception occured while handling the command!",
+            f"An exception occured while handling the command!\n\n{util.discordify(formatted_exception)}",
             util.code_block(f"{type(exc).__name__}: {', '.join(map(str, exc.args))}"),
             0xFF0000
         )
