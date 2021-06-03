@@ -25,7 +25,7 @@ class UserCommand:
         self.cmds_and_funcs = {}
         for i in dir(self):
             if i.startswith("cmd_"):
-                self.cmds_and_funcs[i[len("cmd_"):]] = self.__getattribute__(i)
+                self.cmds_and_funcs[i[len("cmd_") :]] = self.__getattribute__(i)
 
         # Avoid PyCharm shouting that member variables can't be declared
         # outside __init__
@@ -34,9 +34,7 @@ class UserCommand:
         self.args = None
         self.string = None
 
-    async def handle_cmd(
-        self, invoke_msg: discord.Message, resp_msg: discord.Message
-    ):
+    async def handle_cmd(self, invoke_msg: discord.Message, resp_msg: discord.Message):
         """
         Calles the appropriate sub function to handle commands.
         Must return True on successful command execution, False otherwise
@@ -44,14 +42,12 @@ class UserCommand:
         self.invoke_msg = invoke_msg
         self.response = resp_msg
 
-        cmd_str = invoke_msg.content[len(common.PREFIX):].strip()
+        cmd_str = invoke_msg.content[len(common.PREFIX) :].strip()
         self.args = cmd_str.split()
         cmd = self.args.pop(0)
-        self.string = cmd_str[len(cmd):].strip()
+        self.string = cmd_str[len(cmd) :].strip()
 
-        util.log(
-            f"Command invoked by {invoke_msg.author}: {cmd_str}"
-        )
+        util.log(f"Command invoked by {invoke_msg.author}: {cmd_str}")
 
         try:
             await self.cmds_and_funcs[cmd]()
@@ -63,8 +59,10 @@ class UserCommand:
 
             elif isinstance(exc, KeyError):
                 title = "Unrecognized command!"
-                msg = f"Make sure that the command '{cmd}' exists, " +\
-                    "and you have the permission to use it"
+                msg = (
+                    f"Make sure that the command '{cmd}' exists, "
+                    + "and you have the permission to use it"
+                )
 
             else:
                 error_tuple = (type(exc), exc, exc.__traceback__)
@@ -75,11 +73,9 @@ class UserCommand:
                 # this function call itself
                 tbs.pop(1)
 
-                elog = ''.join(tbs).replace(os.getcwd(), "Kithscord")
+                elog = "".join(tbs).replace(os.getcwd(), "Kithscord")
                 if platform.system() == "Windows":
-                    elog = elog.replace(
-                        os.path.dirname(sys.executable), "Python"
-                    )
+                    elog = elog.replace(os.path.dirname(sys.executable), "Python")
 
                 util.log(f"Error: \n" + elog)
                 msg = util.code_block(elog)
@@ -109,23 +105,22 @@ class UserCommand:
         await util.edit_embed(
             self.response,
             "Version",
-            util.run_kcr('-v')
-            + f"Kithscord Version {common.VERSION}"
+            util.run_kcr("-v") + f"Kithscord Version {common.VERSION}",
         )
 
     async def cmd_lex(self):
         """
         Implement kh!lex, to lex kithare source
         """
-        code = self.string.strip().strip('`')
-        with open("tempfile", "w") as f:
+        code = self.string.strip().strip("`")
+        with open("tempfile", "w", encoding="utf-8") as f:
             f.write(code)
 
         try:
             await util.edit_embed(
                 self.response,
                 "Lexed Kithare output",
-                util.code_block(util.run_kcr("--lex", "tempfile"))
+                util.code_block(util.run_kcr("--tokens", "--timer", "tempfile")),
             )
         finally:
             os.remove("tempfile")
@@ -134,15 +129,15 @@ class UserCommand:
         """
         Implement kh!lex, to lex kithare source
         """
-        code = self.string.strip().strip('`')
-        with open("tempfile", "w") as f:
+        code = self.string.strip().strip("`")
+        with open("tempfile", "w", encoding="utf-8") as f:
             f.write(code)
 
         try:
             await util.edit_embed(
                 self.response,
                 "Parsed Kithare output",
-                util.code_block(util.run_kcr("--ast", "tempfile"))
+                util.code_block(util.run_kcr("--ast", "--timer", "tempfile")),
             )
         finally:
             os.remove("tempfile")
