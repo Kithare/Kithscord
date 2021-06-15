@@ -155,8 +155,7 @@ async def pull_kithare(branch="main", response=None, uploadlog=False):
                 response,
                 "Pulling and building Kithare",
                 "Please wait while Kithare is being built",
-                url_thumbnail="https://raw.githubusercontent.com/Kithare/"
-                + "Kithscord/main/assets/fidget-spinner.gif",
+                url_thumbnail="https://i.giphy.com/media/Ju7l5y9osyymQ/200.gif",
             )
 
         if os.path.isdir("kithare"):
