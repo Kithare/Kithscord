@@ -120,7 +120,7 @@ class UserCommand:
             await util.edit_embed(
                 self.response,
                 "Lexed Kithare output",
-                util.code_block(util.run_kcr("--tokens", "--timer", "tempfile")),
+                util.code_block(util.run_kcr("--tokens", "--timer", "--nocolor", "tempfile")),
             )
         finally:
             os.remove("tempfile")
@@ -137,7 +137,7 @@ class UserCommand:
             await util.edit_embed(
                 self.response,
                 "Parsed Kithare output",
-                util.code_block(util.run_kcr("--ast", "--timer", "tempfile")),
+                util.code_block(util.run_kcr("--ast", "--timer", "--nocolor", "tempfile")),
             )
         finally:
             os.remove("tempfile")
