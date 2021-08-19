@@ -1,42 +1,55 @@
-import os
+"""
+This file is a part of the source code for the KithscordBot.
+This project has been licensed under the MIT license.
+Copyright (c) 2021-present Kithare Organization
+
+This file is the main file of the KithscordBot source. Running this
+starts the bot
+"""
 
 import discord
 
-from kithscord import commands, common, util
+import kithscord
+from kithscord.common import bot
 
 
-@common.bot.event
+@bot.event
 async def on_ready():
     """
-    The initial start when Kithscord gets booted.
+    Startup routines when the bot starts
     """
-    util.log("Kithscord ready!")
-
-    if not os.path.isdir("kithare"):
-        print("Kithare installation not detected, installing kithare")
-        await util.pull_kithare()
-        print("Finished installing Kithare")
+    await kithscord.init()
 
 
-@common.bot.event
+@bot.event
 async def on_message(msg: discord.Message):
     """
-    When a message is sent.
+    This function is called for every message by user.
     """
     if msg.author.bot:
         return
 
-    if msg.content.startswith(common.PREFIX):
-        cmd = commands.UserCommand()
-        for role in msg.author.roles:
-            if role.id in common.ADMIN_ROLES:
-                cmd = commands.AdminCommand()
-                break
+    await kithscord.handle_message(msg)
 
-        response = await util.send_embed(
-            msg.channel, "", "Your command is being processed!"
-        )
-        await cmd.handle_cmd(msg, response)
+
+@bot.event
+async def on_message_delete(msg: discord.Message):
+    """
+    This function is called for every message deleted by user.
+    """
+    await kithscord.message_delete(msg)
+
+
+@bot.event
+async def on_message_edit(old: discord.Message, new: discord.Message):
+    """
+    This function is called for every message edited by user.
+    """
+    if new.author.bot:
+        return
+
+    await kithscord.message_edit(old, new)
+
 
 if __name__ == "__main__":
-    common.bot.run(os.environ["TOKEN"])
+    kithscord.run()

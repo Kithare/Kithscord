@@ -1,5 +1,4 @@
 discord>=1.0.1
 psutil>=5.7.3
-pygame>=2.0.0
 python-dotenv>=0.17
 aiohttp>=3.7
