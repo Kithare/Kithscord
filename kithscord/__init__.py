@@ -72,13 +72,13 @@ async def message_delete(msg: discord.Message):
         del common.cmd_logs[msg.id]
 
     elif msg.author.id == common.bot.user.id:
-        for log in common.cmd_logs:
-            if common.cmd_logs[log].id == msg.id:
+        for log, logmsg in common.cmd_logs.items():
+            if logmsg.id == msg.id:
                 del common.cmd_logs[log]
                 return
 
 
-async def message_edit(old: discord.Message, new: discord.Message):
+async def message_edit(_: discord.Message, new: discord.Message):
     """
     This function is called for every message edited by user.
     """

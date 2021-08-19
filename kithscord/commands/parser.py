@@ -276,7 +276,7 @@ def split_args(split_str: str):
                 # got newline while parsing non-multiline block
                 raise BotException(
                     f"Invalid {splitfunc.__name__} formatting!",
-                    f"Use triple quotes/ticks for multiline blocks",
+                    "Use triple quotes/ticks for multiline blocks",
                 )
 
             if char == matchchar:

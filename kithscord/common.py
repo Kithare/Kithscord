@@ -5,6 +5,7 @@ Copyright (c) 2021-present Kithare Organization
 
 This file defines some constants and variables used across the whole codebase
 """
+from __future__ import annotations
 
 import io
 import os
