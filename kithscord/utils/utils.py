@@ -7,6 +7,7 @@ This file defines some important utility functions.
 """
 
 from __future__ import annotations
+import asyncio
 
 import io
 import platform
@@ -127,8 +128,7 @@ async def pull_kithare(
                 thumbnail_url="https://i.giphy.com/media/Ju7l5y9osyymQ/200.gif",
             )
 
-        if dist.parents[1].is_dir():
-            rmtree(dist.parents[1])
+        rmtree(dist.parents[1])
 
         machine = utils.get_machine()
         system = platform.system()
@@ -140,6 +140,12 @@ async def pull_kithare(
 
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as linkobj:
+                if linkobj.content_type != "application/zip":
+                    raise BotException(
+                        "Could not install Kithare!",
+                        "Make sure the branch exists, and github actions ran on it",
+                    )
+
                 with zipfile.ZipFile(io.BytesIO(await linkobj.read()), "r") as zipped:
                     zipped.extractall(temp)
 
@@ -177,12 +183,8 @@ async def run_kcr(*args: str, timeout: int = 5):
     """
     Run kcr command
     """
-    if is_pulling:
-        raise BotException(
-            "Could not execute Kithare command!",
-            "Kithare in being installed on the bot runner, please wait for a "
-            "bit, and then re-run this command",
-        ) from None
+    while is_pulling:
+        await asyncio.sleep(0.1)
 
     try:
         return subprocess.run(
@@ -192,10 +194,12 @@ async def run_kcr(*args: str, timeout: int = 5):
             timeout=timeout,
             text=True,
         ).stdout
+
     except FileNotFoundError:
         raise BotException(
-            "Could not execute kithare command!",
-            "Kithare has not been configured correctly on the bot runner!",
+            "Could not execute Kithare command!",
+            "Kithare has not been configured correctly on the bot runner!\n"
+            "PS: Bot admin if you are reading this, do a `kh!pull` k thanks",
         ) from None
 
 

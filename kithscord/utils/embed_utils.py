@@ -19,7 +19,7 @@ from discord.embeds import EmptyEmbed
 from kithscord import common
 from kithscord.commands.parser import BotException
 
-DEFAULT_EMBED_COLOR = 0xFFFFAA
+DEFAULT_EMBED_COLOR = 0xFF8C00
 
 # regex for doc string
 regex = re.compile(

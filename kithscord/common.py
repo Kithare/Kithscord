@@ -27,6 +27,7 @@ Channel = Union[discord.TextChannel, discord.DMChannel, discord.GroupChannel]
 bot = discord.Client()
 
 TOKEN = os.environ["TOKEN"]
+LOCAL_TEST = "LOCAL_TEST" in os.environ
 
 CMD_FUNC_PREFIX = "cmd_"
 
@@ -34,7 +35,8 @@ BASIC_MAX_FILE_SIZE = 8_000_000  # bytes
 
 ZERO_SPACE = "\u200b"  # U+200B
 
-PREFIX = "kh!"
+PREFIX = "kd!" if LOCAL_TEST else "kh!"
+
 cmd_logs: dict[int, discord.Message] = {}
 
 # Kithare guild, or whichever is the 'primary' guild for the bot
@@ -76,7 +78,6 @@ BOT_HELP_PROMPT = {
 Hey there, do you want to use {BOT_MENTION} ?
 My command prefix is `{PREFIX}`.
 If you want me to run your code, use Discord's code block syntax.
-Learn more about Discord code formatting **[HERE](https://discord.com/channels/772505616680878080/774217896971730974/785510505728311306)**.
 If you want to know about a specifc command run {PREFIX}help [command], for example {PREFIX}help exec.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━""",
 }

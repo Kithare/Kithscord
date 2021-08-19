@@ -9,11 +9,12 @@ This file defines the command handler class for the user commands of the bot
 from __future__ import annotations
 
 import random
+import re
 from pathlib import Path
 
 import discord
 from kithscord import common
-from kithscord.commands.base import CodeBlock, no_dm
+from kithscord.commands.base import BotException, CodeBlock, no_dm
 from kithscord.utils import embed_utils, utils
 
 from .base import BaseCommand
@@ -82,6 +83,54 @@ class UserCommand(BaseCommand):
             self.groups,
             self.page,
         )
+
+    @no_dm
+    async def cmd_refresh(self, msg: discord.Message):
+        """
+        ->type User commands
+        ->signature pg!refresh <message>
+        ->description Refresh a message which support pages.
+        -----
+        Implement pg!refresh, to refresh a message which supports pages
+        """
+        exc = BotException(
+            "Message does not support pages",
+            "The message specified does not support pages. Make sure you "
+            "have replied to the correct message",
+        )
+
+        if (
+            not msg.embeds
+            or not msg.embeds[0].footer
+            or not isinstance(msg.embeds[0].footer.text, str)
+        ):
+            raise exc
+
+        data = msg.embeds[0].footer.text.splitlines()
+
+        if len(data) != 3 and not data[2].startswith("Command: "):
+            raise exc
+
+        page_match = re.search(r"\d+", data[0])
+        if page_match is None:
+            raise exc
+
+        page = page_match.group()
+        cmd_str = data[2].replace("Command: ", "")
+
+        if not page.isdigit() or not cmd_str:
+            raise exc
+
+        try:
+            await self.response_msg.delete()
+        except discord.errors.NotFound:
+            pass
+
+        # Handle the new command, the one that pg!refresh is trying to refresh
+        self.response_msg = msg
+        self.cmd_str = cmd_str
+        self.page = int(page) - 1
+        await self.handle_cmd()
 
     async def cmd_lex(self, code: CodeBlock):
         """

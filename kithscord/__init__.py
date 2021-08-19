@@ -20,7 +20,8 @@ async def _init():
     """
     Startup call helper for kithscord bot
     """
-    sys.stdout = sys.stderr = common.stdout = io.StringIO()
+    if not common.LOCAL_TEST:
+        sys.stdout = sys.stderr = common.stdout = io.StringIO()
 
     print("The KithscordBot is now online!")
     print("Server(s):")
@@ -54,7 +55,8 @@ async def init():
         sys.stderr = sys.__stderr__
         raise
 
-    routine.handle_console.start()
+    if not common.LOCAL_TEST:
+        routine.handle_console.start()
 
     await utils.setup_kcr()
     if common.guild is None:
