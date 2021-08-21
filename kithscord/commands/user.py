@@ -87,10 +87,10 @@ class UserCommand(BaseCommand):
     async def cmd_refresh(self, msg: discord.Message):
         """
         ->type User commands
-        ->signature pg!refresh <message>
+        ->signature kh!refresh <message>
         ->description Refresh a message which support pages.
         -----
-        Implement pg!refresh, to refresh a message which supports pages
+        Implement kh!refresh, to refresh a message which supports pages
         """
         exc = BotException(
             "Message does not support pages",
@@ -125,7 +125,7 @@ class UserCommand(BaseCommand):
         except discord.errors.NotFound:
             pass
 
-        # Handle the new command, the one that pg!refresh is trying to refresh
+        # Handle the new command, the one that kh!refresh is trying to refresh
         self.response_msg = msg
         self.cmd_str = cmd_str
         self.page = int(page) - 1
@@ -134,10 +134,10 @@ class UserCommand(BaseCommand):
     async def cmd_lex(self, code: CodeBlock):
         """
         ->type User commands
-        ->signature kh!lex [code]
-        ->description Get Kithare lexed output of kithare code
+        ->signature kh!lex <code>
+        ->description Get Kithare lexed output of Kithare code
         -----
-        Implement kh!lex, to lex kithare source
+        Implement kh!lex, to lex Kithare source
         """
         tempfile = Path("tempfile")
         tempfile.write_text(code.code, encoding="utf-8")
@@ -158,10 +158,10 @@ class UserCommand(BaseCommand):
     async def cmd_parse(self, code: CodeBlock):
         """
         ->type User commands
-        ->signature kh!parse [code]
-        ->description Get Kithare parsed output of kithare code
+        ->signature kh!parse <code>
+        ->description Get Kithare parsed output of Kithare code
         -----
-        Implement kh!parse, to parse kithare source
+        Implement kh!parse, to parse Kithare source
         """
         tempfile = Path("tempfile")
         tempfile.write_text(code.code, encoding="utf-8")

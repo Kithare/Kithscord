@@ -177,7 +177,7 @@ async def pull_kithare(
 
 async def setup_kcr():
     """
-    Pulls kithare if it is not installed yet
+    Pulls Kithare if it is not installed yet
     """
     if not dist.is_file():
         await pull_kithare()

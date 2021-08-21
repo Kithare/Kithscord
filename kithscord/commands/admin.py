@@ -9,6 +9,7 @@ This file exports the main AdminCommand class
 from __future__ import annotations
 
 import os
+import subprocess
 import sys
 import time
 
@@ -97,35 +98,70 @@ class AdminCommand(UserCommand):
             description=f"**{utils.format_byte(mem, 4)}**\n({mem} B)",
         )
 
-    async def cmd_stop(self):
+    async def cmd_stop(self, no_restart: bool = False):
         """
         ->type Admin commands
-        ->signature kh!stop
-        ->description Stop the bot
+        ->signature kh!stop [no_restart]
+        ->description Stop the bot. If no_restart is True, returns non-zero exit code
         """
         await embed_utils.replace(
             self.response_msg,
-            title="Stopping bot...",
-            description="I gotta go now, but I will BRB, FINISH THE CEMENTER",
+            title="Stopping bot..." if no_restart else "Restarting bot...",
+            description=(
+                "FINISH THE CEMENTER! My final message, goodbye!"
+                if no_restart
+                else "I'mma BRB, FINISH THE CEMENTER"
+            ),
         )
-        sys.exit(0)
+        sys.exit(int(no_restart))
 
-    async def cmd_pull(self, branch: str = "main"):
+    @add_group("pull")
+    async def cmd_pull(self):
         """
         ->type Admin commands
-        ->signature kh!pull [branch]
+        ->signature kh!pull
+        ->description Pull Kithare binaries AND pull kithscord
+        """
+        await self.cmd_pull_kithare()
+        await self.cmd_pull_kithscord()
+
+    @add_group("pull", "kithare")
+    async def cmd_pull_kithare(self, branch: str = "main"):
+        """
+        ->type Admin commands
+        ->signature kh!pull kithare [branch]
         ->description Pull and install Kithare
         """
         await utils.pull_kithare(self.response_msg, branch)
+
+    @add_group("pull", "kithscord")
+    async def cmd_pull_kithscord(
+        self, branch: str = "main", reset_flag: str = "--soft"
+    ):
+        """
+        ->type Admin commands
+        ->signature kh!pull kithscord [branch] [reset_flag]
+        ->description Pull (git reset) Kithscord from git remote
+        """
+        for command in (
+            ("fetch",),
+            ("checkout", branch),
+            ("reset", reset_flag, f"origin/{branch}"),
+        ):
+            subprocess.run(
+                ("git", *command), stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+
+        await self.cmd_stop()
 
     @add_group("sudo")
     async def cmd_sudo(self, msg: String):
         """
         ->type Admin commands
-        ->signature pg!sudo [message]
-        ->description Send a message trough the bot
+        ->signature kh!sudo <msg>
+        ->description Send a message through the bot
         -----
-        Implement pg!sudo, for admins to send messages via the bot
+        Implement kh!sudo, for admins to send messages via the bot
         """
         await self.invoke_msg.channel.send(msg.string)
         await self.response_msg.delete()
@@ -135,10 +171,10 @@ class AdminCommand(UserCommand):
     async def cmd_sudo_edit(self, edit_msg: discord.Message, msg: String):
         """
         ->type Admin commands
-        ->signature pg!sudo_edit [edit_message] [message string]
+        ->signature kh!sudo edit <edit_msg> <msg>
         ->description Edit a message that the bot sent.
         -----
-        Implement pg!sudo_edit, for admins to edit messages via the bot
+        Implement kh!sudo edit, for admins to edit messages via the bot
         """
         await edit_msg.edit(content=msg.string)
         await self.response_msg.delete()
@@ -148,10 +184,10 @@ class AdminCommand(UserCommand):
     async def cmd_eval(self, code: CodeBlock, use_exec: bool = False):
         """
         ->type Admin commands
-        ->signature pg!eval <command> [use_exec]
+        ->signature kh!eval <command> [use_exec]
         ->description Execute arbitrary python code without restrictions
         -----
-        Implement pg!eval, for admins to run arbitrary code on the bot
+        Implement kh!eval, for admins to run arbitrary code on the bot
         """
         # make typecheckers happy
         if not isinstance(self.author, discord.Member):
