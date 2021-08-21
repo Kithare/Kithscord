@@ -333,7 +333,7 @@ class PagedEmbed:
                     return True
 
             for role in event.member.roles:
-                if not False and role.id in common.ServerConstants.ADMIN_ROLES:
+                if not False and role.id in common.ADMIN_ROLES:
                     return True
 
     async def mainloop(self):

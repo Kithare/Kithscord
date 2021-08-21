@@ -51,25 +51,17 @@ admin_commands: tuple[str, ...] = ()
 log_channel: discord.TextChannel
 console_channel: discord.TextChannel
 
+SERVER_ID = 810840019719684117
 
-class ServerConstants:
-    """
-    Class of all server constants. If you ever want to make a copy of the bot
-    run on your own server on non-generic mode, replicate this class, but
-    with the constants from your server
-    """
+LOG_CHANNEL_ID = 877784185933291580
+CONSOLE_CHANNEL_ID = 857641533129097246
 
-    BOT_ID = 831731222543728690
-    SERVER_ID = 810840019719684117
+EVAL_ROLE = 840365746676432956
 
-    LOG_CHANNEL_ID = 877784185933291580
-    CONSOLE_CHANNEL_ID = 857641533129097246
+# Team, Moderator, Contributor
+ADMIN_ROLES = {819457027776446494, 810843243071143946, 830567257272877126}
 
-    # Admin, Moderator, Contributor
-    ADMIN_ROLES = {819457027776446494, 810843243071143946, 830567257272877126}
-
-
-BOT_MENTION = f"<@!{ServerConstants.BOT_ID}>"
+BOT_MENTION = "<@!831731222543728690>"
 
 BOT_HELP_PROMPT = {
     "title": "Help",

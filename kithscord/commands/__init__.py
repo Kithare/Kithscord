@@ -27,7 +27,7 @@ def is_admin(mem: Union[discord.Member, discord.User]):
         return False
 
     for role in mem.roles:
-        if role.id in common.ServerConstants.ADMIN_ROLES:
+        if role.id in common.ADMIN_ROLES:
             return True
 
     return False

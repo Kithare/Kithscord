@@ -183,7 +183,7 @@ async def setup_kcr():
         await pull_kithare()
 
 
-async def run_kcr(*args: str, timeout: int = 5):
+async def run_kcr(*args: str, timeout: int = 5, recurse: bool = True):
     """
     Run kcr command
     """
@@ -200,11 +200,16 @@ async def run_kcr(*args: str, timeout: int = 5):
         ).stdout
 
     except FileNotFoundError:
-        raise BotException(
-            "Could not execute Kithare command!",
-            "Kithare has not been configured correctly on the bot runner!\n"
-            "PS: Bot admin if you are reading this, do a `kh!pull` k thanks",
-        ) from None
+        if not recurse:
+            raise BotException(
+                "Could not execute Kithare command!",
+                "Kithare has not been configured correctly on the bot runner!\n"
+                "Automatic recovery has failed!\n"
+                "PS: Bot Admin, this is likely a bug in the bot itself, fix it",
+            ) from None
+
+        await pull_kithare()
+        return await run_kcr(*args, timeout=timeout, recurse=False)
 
 
 def format_discord_link(link: str, guild_id: int):

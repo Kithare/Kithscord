@@ -29,17 +29,16 @@ async def _init():
     for server in common.bot.guilds:
         prim = ""
 
-        if common.guild is None and server.id == common.ServerConstants.SERVER_ID:
+        if common.guild is None and server.id == common.SERVER_ID:
             prim = "| Primary Guild"
             common.guild = server
 
-        print(" -", server.name, "| Number of channels:",
-              len(server.channels), prim)
+        print(" -", server.name, "| Number of channels:", len(server.channels), prim)
 
         for channel in server.channels:
-            if channel.id == common.ServerConstants.LOG_CHANNEL_ID:
+            if channel.id == common.LOG_CHANNEL_ID:
                 common.log_channel = channel
-            elif channel.id == common.ServerConstants.CONSOLE_CHANNEL_ID:
+            elif channel.id == common.CONSOLE_CHANNEL_ID:
                 common.console_channel = channel
 
 

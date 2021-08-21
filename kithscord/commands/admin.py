@@ -10,12 +10,12 @@ from __future__ import annotations
 
 import os
 import sys
-import psutil
+import time
 
 import discord
-
+import psutil
 from kithscord import common
-from kithscord.commands.base import CodeBlock, String, add_group
+from kithscord.commands.base import BotException, CodeBlock, String, add_group, no_dm
 from kithscord.commands.user import UserCommand
 from kithscord.utils import embed_utils, utils
 
@@ -143,6 +143,52 @@ class AdminCommand(UserCommand):
         await edit_msg.edit(content=msg.string)
         await self.response_msg.delete()
         await self.invoke_msg.delete()
+
+    @no_dm
+    async def cmd_eval(self, code: CodeBlock, use_exec: bool = False):
+        """
+        ->type Admin commands
+        ->signature pg!eval <command> [use_exec]
+        ->description Execute arbitrary python code without restrictions
+        -----
+        Implement pg!eval, for admins to run arbitrary code on the bot
+        """
+        # make typecheckers happy
+        if not isinstance(self.author, discord.Member):
+            return
+
+        if common.EVAL_ROLE not in map(lambda x: x.id, self.author.roles):
+            raise BotException(
+                "Insufficient permissions",
+                "You do not have enough permissions to run this command.",
+            )
+
+        try:
+            script_start = time.perf_counter()
+            eval_output = exec(code.code) if use_exec else eval(code.code)
+            total = time.perf_counter() - script_start
+
+        except Exception as ex:
+            raise BotException(
+                "An exception occured:",
+                utils.code_block(
+                    type(ex).__name__ + ": " + ", ".join(map(str, ex.args))
+                ),
+            ) from None
+
+        executed_time = f"Code executed in {utils.format_time(total)}"
+        if eval_output is None:
+            await embed_utils.replace(
+                self.response_msg,
+                title=executed_time,
+            )
+            return
+
+        await embed_utils.replace(
+            self.response_msg,
+            title=f"Returned output ({executed_time}):",
+            description=utils.code_block(repr(eval_output)),
+        )
 
 
 # monkey-patch admin command names into tuple

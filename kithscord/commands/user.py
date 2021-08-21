@@ -70,7 +70,6 @@ class UserCommand(BaseCommand):
         -----
         Implement kh!help, to display a help message
         """
-
         # needed for typecheckers to know that self.author is a member
         if isinstance(self.author, discord.User):
             return
