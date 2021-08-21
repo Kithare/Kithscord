@@ -153,7 +153,8 @@ async def pull_kithare(
             # get first installer that matches
             installzip = list(temp.glob(f"*{machine}.zip"))[0]
         except IndexError:
-            raise BotException("Could not find installable zip package") from None
+            raise BotException(
+                "Could not find installable zip package") from None
 
         with zipfile.ZipFile(installzip, "r") as zipped:
             zipped.extractall(dist.parents[1])
@@ -162,7 +163,7 @@ async def pull_kithare(
             await embed_utils.replace(
                 response,
                 title="Pulling Kithare",
-                description="Kithare install Suceeded",
+                description="Kithare installation succeeded",
                 color=0x00FF00,
             )
 
@@ -214,7 +215,7 @@ def format_discord_link(link: str, guild_id: int):
         f"https://www.discord.com/channels/{guild_id}/",
     ):
         if link.startswith(prefix):
-            link = link[len(prefix) :]
+            link = link[len(prefix):]
 
     return link
 

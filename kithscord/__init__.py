@@ -33,7 +33,8 @@ async def _init():
             prim = "| Primary Guild"
             common.guild = server
 
-        print(" -", server.name, "| Number of channels:", len(server.channels), prim)
+        print(" -", server.name, "| Number of channels:",
+              len(server.channels), prim)
 
         for channel in server.channels:
             if channel.id == common.ServerConstants.LOG_CHANNEL_ID:

@@ -141,7 +141,7 @@ class UserCommand(BaseCommand):
         Implement kh!lex, to lex kithare source
         """
         tempfile = Path("tempfile")
-        tempfile.write_text(code.code)
+        tempfile.write_text(code.code, encoding="utf-8")
 
         try:
             await embed_utils.replace(
@@ -165,7 +165,7 @@ class UserCommand(BaseCommand):
         Implement kh!parse, to parse kithare source
         """
         tempfile = Path("tempfile")
-        tempfile.write_text(code.code)
+        tempfile.write_text(code.code, encoding="utf-8")
 
         try:
             await embed_utils.replace(
