@@ -23,12 +23,6 @@ import discord
 from kithscord.commands.parser import BotException
 from kithscord.utils import embed_utils, utils
 
-NAME_AND_WORKFLOW = {
-    "Linux-MultiArch": "linux-multiarch-build",
-    "Darwin": "macos-build",
-    "Linux": "ubuntu-build",
-    "Windows": "windows-build",
-}
 KCR = "kcr.exe" if platform.system() == "Windows" else "kcr"
 
 dist = Path("dist") / "Kithare" / KCR
@@ -131,12 +125,12 @@ async def pull_kithare(
         rmtree(dist.parents[1])
 
         machine = utils.get_machine()
-        system = platform.system()
-        if system == "Linux" and machine not in {"x86", "x64"}:
-            system += "-MultiArch"
+        system = platform.system().lower()
+        if system == "linux" and machine not in {"x86", "x64"}:
+            system += "-multiarch"
 
         link = "https://nightly.link/Kithare/Kithare/workflows/"
-        link += f"{NAME_AND_WORKFLOW[system]}/{branch}/Kithare-{system}-Installers.zip"
+        link += f"{system}/{branch}/kithare-{system}-installers.zip"
 
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as linkobj:
