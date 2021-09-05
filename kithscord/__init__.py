@@ -15,6 +15,8 @@ import discord
 from kithscord import commands, common, routine
 from kithscord.utils import utils
 
+is_init = False
+
 
 async def _init():
     """
@@ -46,6 +48,10 @@ async def init():
     """
     Startup call helper for kithscord bot
     """
+    global is_init
+    if is_init:
+        return
+
     try:
         await _init()
     except Exception:
@@ -64,6 +70,8 @@ async def init():
             "Primary guild was not set. Some features of bot would not run as usual."
             " People running commands via DMs might face some problems"
         )
+
+    is_init = True
 
 
 async def message_delete(msg: discord.Message):

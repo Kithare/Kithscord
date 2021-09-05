@@ -106,6 +106,9 @@ class BaseCommand:
         # in kh!refresh command when invoked
         self.page: int = 0
 
+        # bool that indicates whether command invoker has eval perms
+        self.has_eval: bool = False
+
     def get_guild(self):
         """
         Utility to retrieve self.guild. This function will raise BotException

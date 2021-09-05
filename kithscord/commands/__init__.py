@@ -18,19 +18,35 @@ from kithscord.commands import admin, user
 from kithscord.utils import embed_utils
 
 
-def is_admin(mem: Union[discord.Member, discord.User]):
+async def get_perms(mem: Union[discord.Member, discord.User]):
     """
-    Return whether a user is an admin user
+    Get a (has_eval, is_admin) pair
     """
+    roles: set[int] = set()
+    if common.guild is not None and (
+        isinstance(mem, discord.User) or mem.guild.id != common.guild.id
+    ):
+        # User messaging from another non-primary server or DM, check perms
+        # with main (primary) guild
+        try:
+            mem_server = await common.guild.fetch_member(mem.id)
+        except discord.HTTPException:
+            pass
+        else:
+            if mem_server is not None:
+                roles.update(map(lambda x: x.id, mem_server.roles))
 
-    if not isinstance(mem, discord.Member):
-        return False
+    if isinstance(mem, discord.Member):
+        roles.update(map(lambda x: x.id, mem.roles))
 
-    for role in mem.roles:
-        if role.id in common.ADMIN_ROLES:
-            return True
+    if common.EVAL_ROLE in roles:
+        return True, True
 
-    return False
+    for role_id in roles:
+        if role_id in common.ADMIN_ROLES:
+            return False, True
+
+    return False, False
 
 
 async def handle(invoke_msg: discord.Message, response_msg: discord.Message = None):
@@ -67,10 +83,12 @@ async def handle(invoke_msg: discord.Message, response_msg: discord.Message = No
         file=log_txt_file,
     )
 
+    has_eval, is_admin = await get_perms(invoke_msg.author)
     cmd = (
         admin.AdminCommand(invoke_msg, response_msg)
-        if is_admin(invoke_msg.author)
+        if is_admin
         else user.UserCommand(invoke_msg, response_msg)
     )
+    cmd.has_eval = has_eval
     await cmd.handle_cmd()
     return response_msg

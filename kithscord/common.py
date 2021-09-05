@@ -15,7 +15,7 @@ import discord
 
 from dotenv import load_dotenv
 
-__version__ = "v0.2"
+__version__ = "v0.2.1"
 
 if os.path.isfile(".env"):
     load_dotenv()  # take environment variables from .env
@@ -56,10 +56,11 @@ SERVER_ID = 810840019719684117
 LOG_CHANNEL_ID = 877784185933291580
 CONSOLE_CHANNEL_ID = 857641533129097246
 
+# Administrator role
 EVAL_ROLE = 840365746676432956
 
-# Team, Moderator, Contributor
-ADMIN_ROLES = {819457027776446494, 810843243071143946, 830567257272877126}
+# Team, Moderator
+ADMIN_ROLES = {810843243071143946, 830567257272877126}
 
 BOT_MENTION = "<@!831731222543728690>"
 

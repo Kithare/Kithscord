@@ -16,7 +16,7 @@ import time
 import discord
 import psutil
 from kithscord import common
-from kithscord.commands.base import BotException, CodeBlock, String, add_group, no_dm
+from kithscord.commands.base import BotException, CodeBlock, String, add_group
 from kithscord.commands.user import UserCommand
 from kithscord.utils import embed_utils, utils
 
@@ -136,7 +136,7 @@ class AdminCommand(UserCommand):
 
     @add_group("pull", "kithscord")
     async def cmd_pull_kithscord(
-        self, branch: str = "main", reset_flag: str = "--soft"
+        self, branch: str = "main", reset_flag: str = "--hard"
     ):
         """
         ->type Admin commands
@@ -180,7 +180,18 @@ class AdminCommand(UserCommand):
         await self.response_msg.delete()
         await self.invoke_msg.delete()
 
-    @no_dm
+    @add_group("sudo", "delete")
+    async def cmd_sudo_delete(self, msg: discord.Message):
+        """
+        ->type Admin commands
+        ->signature kh!sudo delete <msg>
+        ->description Delete a message through the bot
+        -----
+        Implement kh!sudo delete, for admins to delete messages via the bot
+        """
+        await msg.delete()
+        await self.response_msg.delete()
+
     async def cmd_eval(self, code: CodeBlock, use_exec: bool = False):
         """
         ->type Admin commands
@@ -189,11 +200,8 @@ class AdminCommand(UserCommand):
         -----
         Implement kh!eval, for admins to run arbitrary code on the bot
         """
-        # make typecheckers happy
-        if not isinstance(self.author, discord.Member):
-            return
 
-        if common.EVAL_ROLE not in map(lambda x: x.id, self.author.roles):
+        if not self.has_eval:
             raise BotException(
                 "Insufficient permissions",
                 "You do not have enough permissions to run this command.",
