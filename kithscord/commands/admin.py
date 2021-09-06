@@ -136,23 +136,49 @@ class AdminCommand(UserCommand):
 
     @add_group("pull", "kithscord")
     async def cmd_pull_kithscord(
-        self, branch: str = "main", reset_flag: str = "--hard"
+        self, branch: str = "main", reset_flag: str = "--hard", show_log: bool = False
     ):
         """
         ->type Admin commands
-        ->signature kh!pull kithscord [branch] [reset_flag]
+        ->signature kh!pull kithscord [branch] [reset_flag] [show_log]
         ->description Pull (git reset) Kithscord from git remote
         """
+        if common.LOCAL_TEST:
+            raise BotException(
+                "Kithare cannot be pulled!",
+                "On local botdev setup, pulling kithscord has been blocked "
+                "for *obvious* reasons *duh*",
+            )
+
+        return_text = ""
         for command in (
             ("fetch",),
             ("checkout", branch),
             ("reset", reset_flag, f"origin/{branch}"),
         ):
-            subprocess.run(
-                ("git", *command), stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            ret = subprocess.run(
+                ("git", *command),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                universal_newlines=True,
             )
 
-        await self.cmd_stop()
+            return_text += ret.stdout + "\n"
+            if ret.returncode:
+                raise BotException(
+                    "Kithscord pull failed!",
+                    f"Process exited with exitcode {ret.returncode}!\n"
+                    "Here is the full log:\n" + utils.code_block(return_text),
+                )
+
+        else:
+            if show_log:
+                await self.invoke_msg.reply(
+                    content="Kithscord pull was successful! Here is the log\n"
+                    + utils.code_block(return_text, 1900),
+                )
+
+            await self.cmd_stop()
 
     @add_group("sudo")
     async def cmd_sudo(self, msg: String):
@@ -165,7 +191,10 @@ class AdminCommand(UserCommand):
         """
         await self.invoke_msg.channel.send(msg.string)
         await self.response_msg.delete()
-        await self.invoke_msg.delete()
+        try:
+            await self.invoke_msg.delete()
+        except discord.HTTPException:
+            pass
 
     @add_group("sudo", "edit")
     async def cmd_sudo_edit(self, edit_msg: discord.Message, msg: String):
@@ -176,9 +205,19 @@ class AdminCommand(UserCommand):
         -----
         Implement kh!sudo edit, for admins to edit messages via the bot
         """
-        await edit_msg.edit(content=msg.string)
+        try:
+            await edit_msg.edit(content=msg.string)
+        except discord.HTTPException:
+            raise BotException(
+                "Failed to edit message!",
+                "You cannot edit messages sent by others!",
+            )
+
         await self.response_msg.delete()
-        await self.invoke_msg.delete()
+        try:
+            await self.invoke_msg.delete()
+        except discord.HTTPException:
+            pass
 
     @add_group("sudo", "delete")
     async def cmd_sudo_delete(self, msg: discord.Message):
@@ -189,8 +228,19 @@ class AdminCommand(UserCommand):
         -----
         Implement kh!sudo delete, for admins to delete messages via the bot
         """
-        await msg.delete()
+        try:
+            await msg.delete()
+        except discord.HTTPException:
+            raise BotException(
+                "Failed to delete message!",
+                "This is probably due to missing perms to delete others messages",
+            )
+
         await self.response_msg.delete()
+        try:
+            await self.invoke_msg.delete()
+        except discord.HTTPException:
+            pass
 
     async def cmd_eval(self, code: CodeBlock, use_exec: bool = False):
         """
@@ -200,7 +250,6 @@ class AdminCommand(UserCommand):
         -----
         Implement kh!eval, for admins to run arbitrary code on the bot
         """
-
         if not self.has_eval:
             raise BotException(
                 "Insufficient permissions",

@@ -80,7 +80,7 @@ class BaseCommand:
         self.guild: Optional[discord.Guild] = self.invoke_msg.guild
         self.is_dm = self.guild is None
 
-        # if someone is DMing, set guild to primary server (PGC server)
+        # if someone is DMing, set guild to primary server (Kithare server)
         if self.guild is None:
             self.guild = common.guild
             self.filesize_limit = common.BASIC_MAX_FILE_SIZE

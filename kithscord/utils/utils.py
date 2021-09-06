@@ -147,7 +147,10 @@ async def pull_kithare(
             # get first installer that matches
             installzip = list(temp.glob(f"*{machine}.zip"))[0]
         except IndexError:
-            raise BotException("Could not find installable zip package") from None
+            raise BotException(
+                "Could not install Kithare!",
+                "Could not find installable zip package for the bot host machine",
+            ) from None
 
         with zipfile.ZipFile(installzip, "r") as zipped:
             zipped.extractall(dist.parents[1])
@@ -173,7 +176,7 @@ async def setup_kcr():
     """
     Pulls Kithare if it is not installed yet
     """
-    if not dist.is_file():
+    if not dist.is_file() and not is_pulling:
         await pull_kithare()
 
 

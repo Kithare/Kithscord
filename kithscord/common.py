@@ -20,7 +20,6 @@ __version__ = "v0.2.1"
 if os.path.isfile(".env"):
     load_dotenv()  # take environment variables from .env
 
-
 # declare type alias for any channel
 Channel = Union[discord.TextChannel, discord.DMChannel, discord.GroupChannel]
 

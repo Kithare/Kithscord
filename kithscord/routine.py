@@ -34,7 +34,7 @@ async def handle_console():
         contents = contents.replace(os.path.dirname(sys.executable), "Python")
 
     if common.console_channel is None:
-        # just print error to shell if we cannot sent it on discord
+        # just print contents to shell if we cannot sent it on discord
         print(contents, file=sys.__stdout__)
         return
 
