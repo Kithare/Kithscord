@@ -11,13 +11,29 @@ from __future__ import annotations
 import random
 import re
 from pathlib import Path
+from typing import Union
 
 import discord
+from googletrans import Translator, LANGUAGES
 from kithscord import common
 from kithscord.commands.base import BotException, CodeBlock, no_dm
 from kithscord.utils import embed_utils, utils
 
-from .base import BaseCommand
+from .base import BaseCommand, String, add_group
+
+translator = Translator()
+
+
+def decode_lang(lang: str):
+    """
+    Decode lang string to a human readable format
+    """
+    # the case of keys in 'LANGUAGES' and 'lang' may vary, so lowercase both
+    languages = {k.lower(): v for k, v in LANGUAGES.items()}
+    try:
+        return f"**{languages[lang.lower()].capitalize()}** (`{lang}`)"
+    except KeyError:
+        return f"`{lang}`"
 
 
 class UserCommand(BaseCommand):
@@ -115,9 +131,9 @@ class UserCommand(BaseCommand):
             raise exc
 
         page = page_match.group()
-        cmd_str = data[2].replace("Command: ", "")
+        command_str = data[2].replace("Command: ", "")
 
-        if not page.isdigit() or not cmd_str:
+        if not page.isdigit() or not command_str:
             raise exc
 
         try:
@@ -127,7 +143,7 @@ class UserCommand(BaseCommand):
 
         # Handle the new command, the one that kh!refresh is trying to refresh
         self.response_msg = msg
-        self.cmd_str = cmd_str
+        self.command_str = command_str
         self.page = int(page) - 1
         await self.handle_cmd()
 
@@ -176,3 +192,131 @@ class UserCommand(BaseCommand):
             )
         finally:
             tempfile.unlink()
+
+    @add_group("translate")
+    async def cmd_translate(
+        self,
+        data: Union[String, discord.Message],
+        dest: str = "en",
+        src: str = "auto",
+        extra_data: bool = False,
+    ):
+        """
+        ->type User commands
+        ->signature kh!translate <data> [src] [dest] [extra_data]
+        ->description Translate a message or text using google translate
+        ->extended description
+        Here, `data` can be a string to translate, or a reference to a message to
+        be translated. `src` is the source language, which is auto-detected by default
+        and `dest` is the language to translate to, which is English by default. An
+        additional boolean flag `extra_data` can be passed as `True` to get any extra
+        (technical) data related to the translation
+        -----
+        Implement kh!translate, to translate data
+        """
+        text = data.content if isinstance(data, discord.Message) else data.string
+        if not text:
+            raise BotException(
+                "Could not translate!",
+                "Make sure to enter non-empty text for translation",
+            )
+
+        translated = translator.translate(text, dest=dest, src=src)
+        if not isinstance(translated.text, str) or not translated.text:
+            raise BotException(
+                "Could not translate!",
+                "Failed to get a translation!",
+            )
+
+        desc = f"Successfully translated to {decode_lang(translated.dest)} "
+        desc += "and the source was detected to be in " if src == "auto" else "from "
+        desc += decode_lang(translated.src)
+
+        fields: list[tuple[str, str, bool]] = [
+            ("Translated text", utils.quotify(translated.text), False)
+        ]
+
+        pron: str = (
+            translated.pronunciation
+            if isinstance(translated.pronunciation, str)
+            else ""
+        )
+
+        if pron:
+            fields.append(("Pronunciation", utils.quotify(pron), False))
+
+        try:
+            origin_pron: str = translated.extra_data.pop("origin_pronunciation")
+        except KeyError:
+            origin_pron = ""
+
+        if origin_pron:
+            fields.append(
+                ("Pronunciation of source text", utils.quotify(origin_pron), False)
+            )
+
+        try:
+            confidence = translated.extra_data.pop("confidence")
+            if confidence is not None:
+                fields.append(
+                    (
+                        "Translation confidence level",
+                        utils.quotify(str(confidence)),
+                        False,
+                    )
+                )
+
+        except KeyError:
+            pass
+
+        if extra_data:
+            fields.append(
+                (
+                    "Any extra (technical) data",
+                    f"> `{translated.extra_data}`",
+                    False,
+                )
+            )
+
+        await embed_utils.replace(
+            self.response_msg,
+            title="Here is the translated text!",
+            description=desc,
+            fields=fields,
+        )
+
+    @no_dm
+    @add_group("translate", "list")
+    async def cmd_translate_list(self):
+        """
+        ->type User commands
+        ->signature kh!translate list
+        ->description Get the list of languages to which translations can be made
+        """
+        if not isinstance(self.author, discord.Member):
+            # make typecheckers happy
+            return
+
+        embeds: list[discord.Embed] = []
+        prev = 0
+        languages = tuple(enumerate(LANGUAGES.items()))
+
+        while prev <= len(languages):
+            embeds.append(
+                embed_utils.create(
+                    title="Here is the list of languages",
+                    description="\n".join(
+                        f"**{i}.** {name.capitalize()} (`{lang}`)"
+                        for i, (lang, name) in languages[prev : prev + 20]
+                    ),
+                )
+            )
+            prev += 20
+
+        await embed_utils.PagedEmbed(
+            self.response_msg,
+            embeds,
+            self.author,
+            self.command_str,
+            self.page,
+        ).mainloop()

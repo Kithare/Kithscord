@@ -330,7 +330,7 @@ def split_args(split_str: str):
         yield ret
 
 
-def parse_args(cmd_str: str):
+def parse_args(command_str: str):
     """
     Custom parser for handling arguments. This function parses the source
     string of the command into the command name, a list of arguments and a
@@ -370,7 +370,7 @@ def parse_args(cmd_str: str):
         else:
             args.append(arg)
 
-    for arg in split_args(cmd_str):
+    for arg in split_args(command_str):
         if not isinstance(arg, str):
             append_arg(arg)
             continue

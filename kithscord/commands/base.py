@@ -72,7 +72,7 @@ class BaseCommand:
         self.invoke_msg: discord.Message = invoke_msg
         self.response_msg: discord.Message = resp_msg
         self.is_priv = True
-        self.cmd_str: str = self.invoke_msg.content[len(common.PREFIX) :]
+        self.command_str: str = self.invoke_msg.content[len(common.PREFIX) :]
 
         # Put a few attributes here for easy access
         self.author: Union[discord.Member, discord.User] = self.invoke_msg.author
@@ -365,7 +365,7 @@ class BaseCommand:
         before calling the actual function. Relies on argument annotations to
         cast args/kwargs to the types required by the function
         """
-        cmd, args, kwargs = parse_args(self.cmd_str)
+        cmd, args, kwargs = parse_args(self.command_str)
 
         # First check if it is a group command, and handle it.
         # get the func object

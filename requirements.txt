@@ -2,3 +2,4 @@ discord>=1.0.1
 psutil>=5.7.3
 python-dotenv>=0.17
 aiohttp>=3.7
+googletrans>=4.0.0

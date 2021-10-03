@@ -21,12 +21,23 @@ import aiohttp
 import discord
 
 from kithscord.commands.parser import BotException
-from kithscord.utils import embed_utils, utils
+from kithscord.utils import embed_utils
 
 KCR = "kcr.exe" if platform.system() == "Windows" else "kcr"
 
 dist = Path("dist") / "Kithare" / KCR
 is_pulling = False
+
+
+def quotify(text: str, limit: int = 1024):
+    """
+    Format text in a discord quote, with newline handling
+    """
+    converted = text.strip().replace("\n", "\n> ")
+    ret = f"> {converted}"
+    if len(ret) > limit:
+        ret = ret[: limit - 3] + "..."
+    return ret
 
 
 def rmtree(top: Path):
@@ -124,7 +135,7 @@ async def pull_kithare(
 
         rmtree(dist.parents[1])
 
-        machine = utils.get_machine()
+        machine = get_machine()
         system = platform.system().lower()
         if system == "linux" and machine not in {"x86", "x64"}:
             system += "-multiarch"
