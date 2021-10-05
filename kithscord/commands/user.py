@@ -28,12 +28,10 @@ def decode_lang(lang: str):
     """
     Decode lang string to a human readable format
     """
-    # the case of keys in 'LANGUAGES' and 'lang' may vary, so lowercase both
-    languages = {k.lower(): v for k, v in LANGUAGES.items()}
     try:
-        return f"**{languages[lang.lower()].capitalize()}** (`{lang}`)"
+        return f"**{LANGUAGES[lang.lower()].capitalize()}** (`{lang}`)"
     except KeyError:
-        return f"`{lang}`"
+        return f"`{lang}` (unknown language code)"
 
 
 class UserCommand(BaseCommand):
@@ -197,8 +195,8 @@ class UserCommand(BaseCommand):
     async def cmd_translate(
         self,
         data: Union[String, discord.Message],
-        dest: str = "en",
-        src: str = "auto",
+        dest: Union[str, String] = "en",
+        src: Union[str, String] = "auto",
         extra_data: bool = False,
     ):
         """
@@ -220,6 +218,38 @@ class UserCommand(BaseCommand):
                 "Could not translate!",
                 "Make sure to enter non-empty text for translation",
             )
+
+        if isinstance(dest, String):
+            dest = dest.string
+
+        dest = dest.lower()
+        if dest not in LANGUAGES:
+            for lang, langname in LANGUAGES.items():
+                if langname.lower().startswith(dest):
+                    dest = lang
+                    break
+            else:
+                raise BotException(
+                    "Failed to translate text!",
+                    f"`{dest}` is an unknown language name or code entered "
+                    "for the argument `dest`!",
+                )
+
+        if isinstance(src, String):
+            src = src.string
+
+        src = src.lower()
+        if src != "auto" and src not in LANGUAGES:
+            for lang, langname in LANGUAGES.items():
+                if langname.lower().startswith(src):
+                    src = lang
+                    break
+            else:
+                raise BotException(
+                    "Failed to translate text!",
+                    f"`{src}` is an unknown language name or code entered "
+                    "for the argument `src`!",
+                )
 
         translated = translator.translate(text, dest=dest, src=src)
         if not isinstance(translated.text, str) or not translated.text:
@@ -247,13 +277,13 @@ class UserCommand(BaseCommand):
 
         try:
             origin_pron: str = translated.extra_data.pop("origin_pronunciation")
-        except KeyError:
-            origin_pron = ""
+            if origin_pron:
+                fields.append(
+                    ("Pronunciation of source text", utils.quotify(origin_pron), False)
+                )
 
-        if origin_pron:
-            fields.append(
-                ("Pronunciation of source text", utils.quotify(origin_pron), False)
-            )
+        except KeyError:
+            pass
 
         try:
             confidence = translated.extra_data.pop("confidence")
