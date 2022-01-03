@@ -171,14 +171,13 @@ class AdminCommand(UserCommand):
                     "Here is the full log:\n" + utils.code_block(return_text),
                 )
 
-        else:
-            if show_log:
-                await self.invoke_msg.reply(
-                    content="Kithscord pull was successful! Here is the log\n"
-                    + utils.code_block(return_text, 1900),
-                )
+        if show_log:
+            await self.invoke_msg.reply(
+                content="Kithscord pull was successful! Here is the log\n"
+                + utils.code_block(return_text, 1900),
+            )
 
-            await self.cmd_stop()
+        await self.cmd_stop()
 
     @add_group("sudo")
     async def cmd_sudo(self, msg: String):

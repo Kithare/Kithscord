@@ -11,8 +11,7 @@ from __future__ import annotations
 import asyncio
 import datetime
 import re
-import typing
-from typing import Iterable, Optional, Union
+from typing import Callable, Iterable, Optional, Union
 
 import discord
 from discord.embeds import EmptyEmbed
@@ -354,7 +353,7 @@ class PagedEmbed:
         await self.message.clear_reactions()
 
 
-def get_doc_from_func(func: typing.Callable):
+def get_doc_from_func(func: Callable):
     """
     Get the type, signature, description and other information from docstrings.
 
@@ -398,7 +397,7 @@ async def send_help_message(
     original_msg: discord.Message,
     invoker: discord.Member,
     commands: tuple[str, ...],
-    cmds_and_funcs: dict[str, typing.Callable],
+    cmds_and_funcs: dict[str, Callable],
     groups: dict[str, list],
     page: int = 0,
 ):
