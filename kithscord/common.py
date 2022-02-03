@@ -61,7 +61,8 @@ EVAL_ROLE = 840365746676432956
 # Team, Moderator
 ADMIN_ROLES = {810843243071143946, 830567257272877126}
 
-BOT_MENTION = "<@!831731222543728690>"
+BOT_ID = 831731222543728690
+BOT_MENTION = f"<@!{BOT_ID}>"
 
 BOT_HELP_PROMPT = {
     "title": "Help",
@@ -73,3 +74,6 @@ If you want me to run your code, use Discord's code block syntax.
 If you want to know about a specifc command run {PREFIX}help [command], for example {PREFIX}help exec.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━""",
 }
+
+# Channels where messages posted will be deleted (stuff like console channel)
+NO_TALK_CHANNELS = {CONSOLE_CHANNEL_ID}

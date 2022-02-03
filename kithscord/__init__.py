@@ -106,6 +106,10 @@ async def handle_message(msg: discord.Message):
     """
     Handle a message posted by user
     """
+    if msg.channel.id in common.NO_TALK_CHANNELS and msg.author.id != common.BOT_ID:
+        await msg.delete()
+        return
+
     if not msg.content.startswith(common.PREFIX):
         return
 
