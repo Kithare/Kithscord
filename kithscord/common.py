@@ -15,7 +15,7 @@ import discord
 
 from dotenv import load_dotenv
 
-__version__ = "v0.2.2"
+__version__ = "v0.2.3"
 
 if os.path.isfile(".env"):
     load_dotenv()  # take environment variables from .env

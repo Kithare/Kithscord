@@ -10,11 +10,12 @@ from __future__ import annotations
 
 import random
 import re
+import json
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 import discord
-from googletrans import Translator, LANGUAGES
+from googletrans import LANGUAGES, Translator
 from kithscord import common
 from kithscord.commands.base import BotException, CodeBlock, no_dm
 from kithscord.utils import embed_utils, utils
@@ -22,6 +23,13 @@ from kithscord.utils import embed_utils, utils
 from .base import BaseCommand, String, add_group
 
 translator = Translator()
+
+# dict of kcr commands with their descriptions
+KCR_COMMANDS = {
+    "version": "Shows `kcr` version",
+    "lexicate": "Lexicate Kithare source to output tokens",
+    "parse": "Parse Kithare source to generate AST",
+}
 
 
 def decode_lang(lang: str):
@@ -47,10 +55,8 @@ class UserCommand(BaseCommand):
         """
         await embed_utils.replace(
             self.response_msg,
-            title="Version",
-            description=(
-                f"Kithscord: `{common.__version__}`\n>>> {await utils.run_kcr('-v')}"
-            ),
+            title="Kithscord Version",
+            description=utils.code_block(common.__version__),
         )
 
     async def cmd_ping(self):
@@ -145,51 +151,96 @@ class UserCommand(BaseCommand):
         self.page = int(page) - 1
         await self.handle_cmd()
 
-    async def cmd_lex(self, code: CodeBlock):
+    @add_group("kcr")
+    async def cmd_kcr(self, *, _data: Optional[tuple[str, CodeBlock]] = None):
         """
         ->type User commands
-        ->signature kh!lex <code>
-        ->description Get Kithare lexed output of Kithare code
-        -----
-        Implement kh!lex, to lex Kithare source
+        ->signature kh!kcr
+        ->description Show a list of kithare commands
         """
-        tempfile = Path("tempfile")
+        if _data is None:
+            # show command list
+            await embed_utils.replace(
+                self.response_msg,
+                title="Kithare Commands!",
+                description="List of `kcr` commands Kithscord supports",
+                fields=[(k, v, False) for k, v in KCR_COMMANDS.items()],
+            )
+            return
+
+        command, code = _data
+        if command not in KCR_COMMANDS:
+            raise RuntimeError(f"{command} is not a valid kcr command.")
+
+        if command == "version":
+            # should never happen
+            raise RuntimeError("version cannot be used with codeblock")
+
+        # this tempfile is re-used for both code and output
+        tempfile = Path(f"tempfile.{code.lang}" if code.lang else "tempfile")
         tempfile.write_text(code.code, encoding="utf-8")
 
         try:
-            await embed_utils.replace(
-                self.response_msg,
-                title="Lexed Kithare output",
-                description=utils.code_block(
-                    await utils.run_kcr(
-                        "--tokens", "--timer", "--nocolor", str(tempfile)
-                    )
-                ),
-            )
+            kcr_out = await utils.run_kcr(command, str(tempfile))
+
+            content = f"`kcr` {command}d Output!"
+            try:
+                # formats kcr output and also checks it
+                tempfile.write_text(json.dumps(json.loads(kcr_out), indent=2))
+            except json.JSONDecodeError as e:
+                # kcr spit invalid JSON. Could not format
+                tempfile.write_bytes(kcr_out)
+                content += (
+                    "\n**THIS IS SUSSY**\n"
+                    "This JSON is invalid according to the Python `json` module.\n"
+                    f"Python Exception (`JSONDecodeError`): `{e}`\n"
+                    "Could be a bug in Kithare (`kcr`)!\n"
+                    "Sending unformatted output\n"
+                )
+
+            try:
+                await self.invoke_msg.reply(
+                    content=content,
+                    file=discord.File(str(tempfile), filename="out.json"),
+                )
+
+                await self.response_msg.delete()
+            except discord.HTTPException:
+                pass
+
         finally:
             tempfile.unlink()
 
-    async def cmd_parse(self, code: CodeBlock):
+    @add_group("kcr", "version")
+    async def cmd_kcr_version(self):
         """
         ->type User commands
-        ->signature kh!parse <code>
-        ->description Get Kithare parsed output of Kithare code
-        -----
-        Implement kh!parse, to parse Kithare source
+        ->signature kh!kcr version
+        ->description Get version of `kcr`
         """
-        tempfile = Path("tempfile")
-        tempfile.write_text(code.code, encoding="utf-8")
+        await embed_utils.replace(
+            self.response_msg,
+            title="`kcr` Version",
+            description=utils.code_block(await utils.run_kcr("version", text=True)),
+        )
 
-        try:
-            await embed_utils.replace(
-                self.response_msg,
-                title="Parsed Kithare output",
-                description=utils.code_block(
-                    await utils.run_kcr("--ast", "--timer", "--nocolor", str(tempfile))
-                ),
-            )
-        finally:
-            tempfile.unlink()
+    @add_group("kcr", "lexicate")
+    async def cmd_kcr_lexicate(self, code: CodeBlock):
+        """
+        ->type User commands
+        ->signature kh!kcr lexicate <code>
+        ->description Get lexicated tokens from Kithare code
+        """
+        await self.cmd_kcr(_data=("lexicate", code))
+
+    @add_group("kcr", "parse")
+    async def cmd_kcr_parse(self, code: CodeBlock):
+        """
+        ->type User commands
+        ->signature kh!kcr parse <code>
+        ->description Get parsed AST output of Kithare code
+        """
+        await self.cmd_kcr(_data=("parse", code))
 
     @add_group("translate")
     async def cmd_translate(

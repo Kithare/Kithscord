@@ -191,7 +191,9 @@ async def setup_kcr():
         await pull_kithare()
 
 
-async def run_kcr(*args: str, timeout: int = 5, recurse: bool = True):
+async def run_kcr(
+    *args: str, timeout: int = 5, text: bool = False, recurse: bool = True
+):
     """
     Run kcr command
     """
@@ -204,7 +206,7 @@ async def run_kcr(*args: str, timeout: int = 5, recurse: bool = True):
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             timeout=timeout,
-            text=True,
+            text=text,
         ).stdout
 
     except FileNotFoundError:
@@ -217,7 +219,7 @@ async def run_kcr(*args: str, timeout: int = 5, recurse: bool = True):
             ) from None
 
         await pull_kithare()
-        return await run_kcr(*args, timeout=timeout, recurse=False)
+        return await run_kcr(*args, timeout=timeout, text=text, recurse=False)
 
 
 def format_discord_link(link: str, guild_id: int):
