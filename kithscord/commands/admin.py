@@ -130,9 +130,34 @@ class AdminCommand(UserCommand):
         """
         ->type Admin commands
         ->signature kh!pull kithare [branch]
-        ->description Pull and install Kithare
+        ->description Pull and install Kithare from github
         """
         await utils.pull_kithare(self.response_msg, branch)
+
+    @add_group("pull", "kithare", "link")
+    async def cmd_pull_kithare_link(self, link: String):
+        """
+        ->type Admin commands
+        ->signature kh!pull kithare link <link>
+        ->description Pull and install Kithare from a link
+        """
+        await utils.pull_kithare_link(link.string, self.response_msg)
+
+    @add_group("pull", "kithare", "attachment")
+    async def cmd_pull_kithare_attachment(self):
+        """
+        ->type Admin commands
+        ->signature kh!pull kithare attachment
+        ->description Pull and install Kithare from zip attachment
+        """
+        for attach in self.invoke_msg.attachments:
+            if attach.content_type == "application/zip":
+                await self.cmd_pull_kithare_link(attach.url)
+                break
+        else:
+            raise BotException(
+                "Could not pull Kithare!", "Did not find any zip file attachment"
+            )
 
     @add_group("pull", "kithscord")
     async def cmd_pull_kithscord(

@@ -108,9 +108,7 @@ def get_machine(is_32_bit: bool = False):
     return machine
 
 
-async def pull_kithare(
-    response: Optional[discord.Message] = None, branch: str = "main"
-):
+async def pull_kithare_link(link: str, response: Optional[discord.Message] = None):
     """
     Pull and install Kithare from github actions installers
     """
@@ -135,20 +133,12 @@ async def pull_kithare(
 
         rmtree(dist.parents[1])
 
-        machine = get_machine()
-        system = platform.system().lower()
-        if system == "linux" and machine not in {"x86", "x64"}:
-            system += "-multiarch"
-
-        link = "https://nightly.link/Kithare/Kithare/workflows/"
-        link += f"{system}/{branch}/kithare-{system}-installers.zip"
-
         async with aiohttp.ClientSession() as session:
             async with session.get(link) as linkobj:
                 if linkobj.content_type != "application/zip":
                     raise BotException(
                         "Could not install Kithare!",
-                        "Make sure the branch exists, and github actions ran on it",
+                        "Failed to download the zip containing binaries",
                     )
 
                 with zipfile.ZipFile(io.BytesIO(await linkobj.read()), "r") as zipped:
@@ -156,7 +146,7 @@ async def pull_kithare(
 
         try:
             # get first installer that matches
-            installzip = list(temp.glob(f"*{machine}.zip"))[0]
+            installzip = list(temp.glob(f"*{get_machine()}.zip"))[0]
         except IndexError:
             raise BotException(
                 "Could not install Kithare!",
@@ -165,6 +155,12 @@ async def pull_kithare(
 
         with zipfile.ZipFile(installzip, "r") as zipped:
             zipped.extractall(dist.parents[1])
+
+        if not dist.is_file():
+            raise BotException(
+                "Could not install Kithare!",
+                "Missing `kcr` executable after installation",
+            )
 
         # fix permissions on the dist dir, because ZipFile messes them up
         for file in dist.parents[1].rglob("*"):
@@ -181,6 +177,24 @@ async def pull_kithare(
     finally:
         rmtree(temp)
         is_pulling = False
+
+
+async def pull_kithare(
+    response: Optional[discord.Message] = None, branch: str = "main"
+):
+    """
+    Pull and install Kithare from a link (this link should be a zip file)
+    """
+    # generate default link
+    machine = get_machine()
+    system = platform.system().lower()
+    if system == "linux" and machine not in {"x86", "x64"}:
+        system += "-multiarch"
+
+    link = "https://nightly.link/Kithare/Kithare/workflows/"
+    link += f"{system}/{branch}/kithare-{system}-installers.zip"
+
+    await pull_kithare_link(link, response)
 
 
 async def setup_kcr():
