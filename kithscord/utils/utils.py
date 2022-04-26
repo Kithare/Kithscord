@@ -23,7 +23,14 @@ import discord
 from kithscord.commands.parser import BotException
 from kithscord.utils import embed_utils
 
-KCR = "kcr.exe" if platform.system() == "Windows" else "kcr"
+system = platform.system()
+if system == "Windows":
+    KCR = "kcr.exe"
+elif system == "Linux":
+    # use kcr-static on linux because kcr can have issues
+    KCR = "kcr-static"
+else:
+    KCR = "kcr"
 
 dist = Path("dist") / "Kithare" / KCR
 is_pulling = False
