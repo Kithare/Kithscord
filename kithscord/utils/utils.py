@@ -193,13 +193,9 @@ async def pull_kithare(
     Pull and install Kithare from a link (this link should be a zip file)
     """
     # generate default link
-    machine = get_machine()
     system = platform.system().lower()
-    if system == "linux" and machine not in {"x86", "x64"}:
-        system += "-multiarch"
-
     link = "https://nightly.link/Kithare/Kithare/workflows/"
-    link += f"{system}/{branch}/kithare-{system}-installers.zip"
+    link += f"{system}/{branch}/kithare-{system}-{get_machine()}-installers.zip"
 
     await pull_kithare_link(link, response)
 
