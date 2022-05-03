@@ -12,6 +12,7 @@ import os
 import subprocess
 import sys
 import time
+from typing import Union
 
 import discord
 import psutil
@@ -135,13 +136,15 @@ class AdminCommand(UserCommand):
         await utils.pull_kithare(self.response_msg, branch)
 
     @add_group("pull", "kithare", "link")
-    async def cmd_pull_kithare_link(self, link: String):
+    async def cmd_pull_kithare_link(self, link: Union[str, String]):
         """
         ->type Admin commands
         ->signature kh!pull kithare link <link>
         ->description Pull and install Kithare from a link
         """
-        await utils.pull_kithare_link(link.string, self.response_msg)
+        await utils.pull_kithare_link(
+            link if isinstance(link, str) else link.string, self.response_msg
+        )
 
     @add_group("pull", "kithare", "attachment")
     async def cmd_pull_kithare_attachment(self):

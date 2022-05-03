@@ -183,7 +183,7 @@ class UserCommand(BaseCommand):
         try:
             kcr_out = await utils.run_kcr(command, str(tempfile))
 
-            content = f"`kcr` {command}d Output!"
+            content = f"`kcr` {command}d output!"
             try:
                 # formats kcr output and also checks it
                 tempfile.write_text(json.dumps(json.loads(kcr_out), indent=2))
