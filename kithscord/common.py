@@ -55,11 +55,13 @@ SERVER_ID = 810840019719684117
 LOG_CHANNEL_ID = 877784185933291580
 CONSOLE_CHANNEL_ID = 857641533129097246
 
-# Administrator role
-EVAL_ROLE = 840365746676432956
+# Discord ID of @Ankith and @Avaxar
+# People whose IDs are in this list can run commands that 'eval/exec' along
+# with having access to all admin commands of the bot
+EVAL_MEMBERS = {763015391710281729, 414330602930700288}
 
-# Team, Moderator
-ADMIN_ROLES = {810843243071143946, 830567257272877126}
+# Administrator, Moderator and Lead Contributor
+ADMIN_ROLES = {840365746676432956, 830567257272877126, 967717831233921024}
 
 BOT_ID = 831731222543728690
 BOT_MENTION = f"<@!{BOT_ID}>"

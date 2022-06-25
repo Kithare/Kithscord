@@ -22,6 +22,9 @@ async def get_perms(mem: Union[discord.Member, discord.User]):
     """
     Get a (has_eval, is_admin) pair
     """
+    if mem.id in common.EVAL_MEMBERS:
+        return True, True
+
     roles: set[int] = set()
     if common.guild is not None and (
         isinstance(mem, discord.User) or mem.guild.id != common.guild.id
@@ -38,9 +41,6 @@ async def get_perms(mem: Union[discord.Member, discord.User]):
 
     if isinstance(mem, discord.Member):
         roles.update(map(lambda x: x.id, mem.roles))
-
-    if common.EVAL_ROLE in roles:
-        return True, True
 
     for role_id in roles:
         if role_id in common.ADMIN_ROLES:
